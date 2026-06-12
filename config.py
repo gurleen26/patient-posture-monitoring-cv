@@ -34,10 +34,11 @@ EXERCISES = {
 
     "standing": {
         "description":    "Normal standing posture",
-        "knee_min":       160,
+        "knee_min":       100,
         "knee_max":       180,
         "spine_min":      155,
         "shoulder_min":   15,
+        "asymmetry_threshold": 15,
     },
 
     "squat": {
@@ -46,6 +47,7 @@ EXERCISES = {
         "knee_max":       110,
         "spine_min":      140,
         "shoulder_min":   15,
+        "asymmetry_threshold": 15,
     },
 
     "lunge": {

@@ -1,28 +1,3 @@
-# import mediapipe as mp
-
-# mp_pose = mp.solutions.pose
-# mp_draw = mp.solutions.drawing_utils
-
-# # Creates and returns a Pose detection model.
-# def get_pose_model(static_image_mode=False):
-#     return mp_pose.Pose(
-#         static_image_mode=static_image_mode,
-#         min_detection_confidence=0.7,
-#         min_tracking_confidence=0.7)
-
-# def get_landmarks(results):
-#     if results.pose_landmarks:
-#         return results.pose_landmarks.landmark
-#     return None
-
-# def draw_landmarks(frame, results):
-#     if results.pose_landmarks:
-#         mp_draw.draw_landmarks(
-#             frame,
-#             results.pose_landmarks,
-#             mp_pose.POSE_CONNECTIONS)
-#         return frame
-
 import mediapipe as mp
 import cv2
 import numpy as np

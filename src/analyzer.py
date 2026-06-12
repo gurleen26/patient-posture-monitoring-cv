@@ -18,13 +18,15 @@ def analyze_posture(angles, exercise=DEFAULT_EXERCISE):
     spine      = angles.get("spine")
     shoulder   = angles.get("shoulder")
 
-    # ==================================================
+    
     # WARRIOR POSE LOGIC
-    # ==================================================
-
+    
     if exercise == "warrior":
 
-        # One leg should be bent
+        
+        # Knee posture
+        
+
         if left_knee is not None and right_knee is not None:
 
             bent_leg_ok = (
@@ -43,17 +45,29 @@ def analyze_posture(angles, exercise=DEFAULT_EXERCISE):
             if not straight_leg_ok:
                 issues.append("Back leg should remain straighter")
 
-        # Spine check
-        if spine is not None and spine < 140:
+        
+        # Torso posture
+        
+
+        # Warrior pose should keep torso mostly upright
+        if spine is not None and spine < 165:
             issues.append("Upper body leaning too much")
 
-        # Shoulder check
-        if shoulder is not None and shoulder < 70:
+        
+        # Arm alignment
+        
+
+        if shoulder is not None and shoulder < 75:
             issues.append("Arms not properly aligned")
 
-    # ==================================================
+        # Detect uneven arms
+        if angles.get("shoulder_asymmetry") is not None:
+            if angles["shoulder_asymmetry"] > 10:
+                issues.append("Arms are unevenly aligned")
+
+    
     # DEFAULT LOGIC FOR OTHER EXERCISES
-    # ==================================================
+    
 
     else:
 
@@ -94,7 +108,7 @@ def analyze_posture(angles, exercise=DEFAULT_EXERCISE):
                     f"Shoulder asymmetry: {angles['shoulder_asymmetry']} deg difference"
                 )
 
-    # ==================================================
+    
 
     if len(issues) > 0:
         status = "Needs correction"

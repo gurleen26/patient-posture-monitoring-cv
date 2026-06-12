@@ -62,7 +62,7 @@ def calculate_spine_angle(shoulder, hip):
     return round(spine_angle, 1)
 
 
-def get_coord(landmarks, name, use_3d=True):
+def get_coord(landmarks, name, use_3d=False):
     """
     Get landmark coordinates.
     Returns None if landmark visibility is low.
@@ -128,8 +128,11 @@ def get_all_angles(landmarks):
         angles["spine"] = calculate_spine_angle(ls, lh)
 
     # Shoulder
-    if all(v is not None for v in [le, ls, lh]):
-        angles["shoulder"] = calculate_angle(le, ls, lh)
+    lw = get_coord(landmarks, "left_wrist")
+    rs = get_coord(landmarks, "right_shoulder")
+
+    if all(v is not None for v in [lw, ls, rs]):
+        angles["shoulder"] = calculate_angle(lw, ls, rs)
 
     # ==================================================
     # RIGHT SIDE
@@ -151,8 +154,11 @@ def get_all_angles(landmarks):
         angles["right_spine"] = calculate_spine_angle(rs, rh)
 
     # Right shoulder
-    if all(v is not None for v in [re, rs, rh]):
-        angles["right_shoulder"] = calculate_angle(re, rs, rh)
+    rw = get_coord(landmarks, "right_wrist")
+    ls = get_coord(landmarks, "left_shoulder")
+
+    if all(v is not None for v in [rw, rs, ls]):
+        angles["right_shoulder"] = calculate_angle(rw, rs, ls)
 
     # ==================================================
     # ASYMMETRY
