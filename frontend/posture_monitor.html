@@ -3,876 +3,829 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>PostureMed — Patient Posture Monitoring System</title>
+<title>PostureMed — AI Physiotherapy Assistant</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#f0f4f8;
+  --bg:#f7f9fc;
   --white:#ffffff;
-  --surface:#e8eef5;
-  --border:#d0dce8;
-  --border2:#c2d0df;
-  --blue:#1a5f9e;
-  --blue-light:#2e7fd4;
-  --blue-pale:#deeaf7;
-  --teal:#0d8a7a;
-  --teal-light:#14b8a6;
-  --teal-pale:#d4f0ed;
+  --surface:#eef2f7;
+  --border:#dde4ee;
+  --border2:#c8d4e3;
+  --blue:#1652a0;
+  --blue-light:#2166c4;
+  --blue-pale:#deeaf9;
+  --teal:#0a8a78;
+  --teal-light:#12b49f;
+  --teal-pale:#d3f0eb;
   --red:#c0392b;
   --red-pale:#fde8e6;
   --amber:#b45309;
   --amber-pale:#fef3c7;
-  --text:#1a2535;
-  --text2:#3d5166;
-  --muted:#6b8299;
-  --font:'Nunito Sans',sans-serif;
-  --mono:'IBM Plex Mono',monospace;
+  --purple:#6d28d9;
+  --purple-pale:#ede9fe;
+  --text:#111827;
+  --text2:#374151;
+  --muted:#6b7280;
+  --font:'Inter',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --radius:10px;
+  --shadow:0 2px 12px rgba(0,0,0,.07);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.10);
 }
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden;font-size:14px}
 
-/* ECG background pattern */
-.ecg-bg{position:fixed;inset:0;z-index:0;opacity:.04;pointer-events:none;overflow:hidden}
-.ecg-bg svg{width:100%;height:100%}
+/* ── LAYOUT ── */
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+@media(max-width:900px){.app{grid-template-columns:1fr}}
 
-/* Top alert bar */
-.alert-bar{background:var(--blue);color:#fff;padding:8px 24px;font-family:var(--mono);font-size:11px;display:flex;align-items:center;gap:12px;letter-spacing:.03em}
-.alert-dot{width:6px;height:6px;border-radius:50%;background:#7dd3fc;animation:blink 1.5s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+/* ── SIDEBAR ── */
+.sidebar{background:var(--blue);color:#fff;display:flex;flex-direction:column;padding:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar-logo{padding:28px 24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.logo-mark{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.logo-icon{width:36px;height:36px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-name{font-size:18px;font-weight:800;letter-spacing:-.4px}
+.logo-name em{font-style:normal;color:#7dd3fc}
+.logo-sub{font-size:10px;font-family:var(--mono);color:rgba(255,255,255,.45);letter-spacing:.06em}
 
-/* NAV */
-nav{background:var(--white);border-bottom:2px solid var(--blue);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(26,95,158,.08)}
-.logo{display:flex;align-items:center;gap:10px}
-.logo-cross{width:32px;height:32px;position:relative;display:flex;align-items:center;justify-content:center}
-.logo-cross::before,.logo-cross::after{content:'';position:absolute;background:var(--white);border-radius:2px}
-.logo-cross::before{width:32px;height:12px}
-.logo-cross::after{width:12px;height:32px}
-.logo-cross-bg{width:32px;height:32px;background:var(--blue);border-radius:6px;position:absolute}
-.logo-text{font-size:20px;font-weight:800;color:var(--blue);letter-spacing:-.5px}
-.logo-text span{color:var(--teal)}
-.nav-right{display:flex;align-items:center;gap:16px}
-.nav-badge{font-family:var(--mono);font-size:10px;background:var(--blue-pale);color:var(--blue);border:1px solid var(--border);padding:4px 10px;border-radius:4px;font-weight:500}
-.nav-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--teal);font-weight:700}
-.nav-status-dot{width:8px;height:8px;border-radius:50%;background:var(--teal-light);animation:blink 2s infinite}
+.sidebar-section{padding:20px 16px 8px;font-size:10px;font-family:var(--mono);color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase}
+.sidebar-nav{padding:0 12px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;color:rgba(255,255,255,.7);font-size:13px;font-weight:500;margin-bottom:2px}
+.nav-item:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.15);color:#fff}
+.nav-item .nav-icon{width:20px;text-align:center;font-size:15px;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:10px;font-family:var(--mono);background:rgba(255,255,255,.2);padding:2px 7px;border-radius:10px}
 
-/* HERO */
-.hero{background:linear-gradient(135deg,var(--blue) 0%,#1a4a7a 100%);color:#fff;padding:56px 32px 48px;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
-.hero-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;position:relative;z-index:1}
-.hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);padding:5px 12px;border-radius:4px;font-family:var(--mono);font-size:11px;margin-bottom:16px;letter-spacing:.05em}
-.hero h1{font-size:clamp(28px,3.5vw,46px);font-weight:800;line-height:1.15;letter-spacing:-.5px;margin-bottom:16px}
-.hero h1 em{font-style:normal;color:#7dd3fc}
-.hero p{font-size:14px;line-height:1.8;color:rgba(255,255,255,.75);margin-bottom:28px;font-family:var(--mono);font-weight:300}
-.hero-btns{display:flex;gap:12px;flex-wrap:wrap}
-.btn-white{background:#fff;color:var(--blue);font-family:var(--font);font-weight:800;font-size:13px;padding:11px 22px;border:none;border-radius:6px;cursor:pointer;transition:all .2s;letter-spacing:.01em}
-.btn-white:hover{background:#e8f4ff;transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.2)}
-.btn-ghost{background:transparent;color:#fff;font-family:var(--font);font-weight:700;font-size:13px;padding:11px 22px;border:1.5px solid rgba(255,255,255,.4);border-radius:6px;cursor:pointer;transition:all .2s}
-.btn-ghost:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.7)}
+.sidebar-bottom{margin-top:auto;padding:16px;border-top:1px solid rgba(255,255,255,.1)}
+.sys-status{display:flex;align-items:center;gap:8px;font-size:11px;color:rgba(255,255,255,.6)}
+.sys-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.85)}}
 
-/* monitor card */
-.monitor-card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.15);border-radius:14px;overflow:hidden}
-.monitor-header{background:rgba(0,0,0,.2);padding:10px 16px;display:flex;align-items:center;gap:8px}
-.mh-dot{width:8px;height:8px;border-radius:50%}
-.monitor-screen{position:relative;aspect-ratio:4/3}
-.monitor-screen canvas{width:100%;height:100%;display:block}
-.monitor-hud{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:12px;pointer-events:none}
-.hud-top{display:flex;justify-content:space-between;align-items:flex-start}
-.hud-rec{font-family:var(--mono);font-size:10px;background:rgba(192,57,43,.8);color:#fff;padding:3px 8px;border-radius:3px;display:flex;align-items:center;gap:5px}
-.hud-rec-dot{width:6px;height:6px;border-radius:50%;background:#ff9999;animation:blink 1s infinite}
-.hud-patient{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:4px 10px;font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.7)}
-.hud-bottom{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.hud-metric{background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:6px 8px}
-.hud-metric-label{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.5);margin-bottom:2px}
-.hud-metric-val{font-family:var(--mono);font-size:13px;font-weight:500;color:#7dd3fc}
+@media(max-width:900px){.sidebar{display:none}}
 
-/* MAIN CONTENT */
-.main{max-width:1100px;margin:0 auto;padding:40px 32px}
+/* ── MAIN CONTENT ── */
+.content{display:flex;flex-direction:column;min-height:100vh}
 
-/* SECTION */
-.section{margin-bottom:48px}
-.sec-header{display:flex;align-items:center;gap:14px;margin-bottom:24px}
-.sec-num{font-family:var(--mono);font-size:10px;color:var(--white);background:var(--blue);padding:3px 8px;border-radius:3px;font-weight:500}
-.sec-header h2{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.3px}
-.sec-line{flex:1;height:1px;background:var(--border)}
+/* ── TOPBAR ── */
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:15px;font-weight:700;color:var(--text)}
+.topbar-title span{color:var(--muted);font-weight:400;margin-left:6px;font-size:13px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-badge{font-family:var(--mono);font-size:10px;background:var(--blue-pale);color:var(--blue);border:1px solid #b8d4ef;padding:4px 10px;border-radius:5px;font-weight:500}
+.topbar-badge.ai{background:var(--purple-pale);color:var(--purple);border-color:#c4b5fd}
 
-/* MODES */
-.modes{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.mode-card{background:var(--white);border:2px solid var(--border);border-radius:12px;padding:28px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
-.mode-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--blue);transform:scaleX(0);transition:transform .25s;transform-origin:left}
-.mode-card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 8px 28px rgba(26,95,158,.12)}
-.mode-card:hover::after{transform:scaleX(1)}
-.mode-card.upload-card::after{background:var(--teal)}
-.mode-card.upload-card:hover{border-color:var(--teal);box-shadow:0 8px 28px rgba(13,138,122,.12)}
-.mode-icon{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:22px}
-.live-card .mode-icon{background:var(--blue-pale);color:var(--blue)}
-.upload-card .mode-icon{background:var(--teal-pale);color:var(--teal)}
-.mode-card h3{font-size:17px;font-weight:800;margin-bottom:8px;color:var(--text)}
-/* .mode-card p{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:16px} */
-.mode-card p{font-family:var(--font);font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px}
-.mode-pill{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:4px;width:fit-content;font-weight:500}
-.live-card .mode-pill{background:var(--blue-pale);color:var(--blue);border:1px solid #b8d4ef}
-.upload-card .mode-pill{background:var(--teal-pale);color:var(--teal);border:1px solid #a8ddd8}
+/* ── PAGE BODY ── */
+.page{padding:32px;flex:1}
+.page-section{display:none}
+.page-section.active{display:block}
 
-/* PANEL */
-.panel{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:24px;margin-top:16px}
-.panel-title{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.panel-title::before{content:'';width:3px;height:14px;background:var(--blue);border-radius:2px;display:inline-block}
+/* ── CARDS ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:700;color:var(--text)}
+.card-subtitle{font-size:11px;font-family:var(--mono);color:var(--muted);margin-top:2px}
+.card-body{padding:20px}
 
-/* METRICS */
-.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
-.metric-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
-.metric-label{font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
-.metric-val{font-size:26px;font-weight:800;letter-spacing:-1px;font-family:var(--mono)}
-.metric-val.good{color:var(--teal)}
-.metric-val.warn{color:var(--amber)}
-.metric-val.bad{color:var(--red)}
-.metric-val.idle{color:var(--border2)}
-.metric-unit{font-size:13px;font-weight:400;color:var(--muted)}
+/* ── STAT CARDS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+@media(max-width:700px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card:nth-child(1)::before{background:var(--blue)}
+.stat-card:nth-child(2)::before{background:var(--teal)}
+.stat-card:nth-child(3)::before{background:var(--amber)}
+.stat-card:nth-child(4)::before{background:var(--purple)}
+.stat-icon{font-size:22px;margin-bottom:10px}
+.stat-val{font-size:28px;font-weight:800;font-family:var(--mono);letter-spacing:-1px;color:var(--text)}
+.stat-label{font-size:11px;color:var(--muted);margin-top:3px;font-weight:500}
 
-.status-bar{border-radius:8px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-weight:700;font-size:14px;margin-top:4px}
-.status-bar.good{background:var(--teal-pale);border:1.5px solid #a8ddd8;color:var(--teal)}
-.status-bar.bad{background:var(--red-pale);border:1.5px solid #f5c6c2;color:var(--red)}
-.status-bar.idle{background:var(--surface);border:1.5px solid var(--border);color:var(--muted)}
-.status-icon{font-size:18px}
+/* ── MODE CARDS ── */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+@media(max-width:600px){.mode-grid{grid-template-columns:1fr}}
+.mode-card{background:var(--white);border:2px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;transition:all .2s;position:relative}
+.mode-card:hover{border-color:var(--blue);box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.mode-card.upload-card:hover{border-color:var(--teal)}
+.mode-card .mode-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px}
+.live-card .mode-icon{background:var(--blue-pale)}
+.upload-card .mode-icon{background:var(--teal-pale)}
+.mode-card h3{font-size:15px;font-weight:700;margin-bottom:6px}
+.mode-card p{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:14px}
+.mode-tag{font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:4px;display:inline-block}
+.live-card .mode-tag{background:var(--blue-pale);color:var(--blue);border:1px solid #b8d4ef}
+.upload-card .mode-tag{background:var(--teal-pale);color:var(--teal);border:1px solid #a8ddd8}
+.mode-arrow{position:absolute;top:20px;right:20px;color:var(--border2);font-size:18px;transition:color .2s}
+.mode-card:hover .mode-arrow{color:var(--blue)}
+.upload-card:hover .mode-arrow{color:var(--teal)}
 
-.alert-box{margin-top:12px;padding:12px 16px;background:var(--amber-pale);border:1.5px solid #fcd34d;border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--amber);line-height:1.7;display:flex;gap:10px;align-items:flex-start}
+/* ── PANELS ── */
+.panel{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.panel-label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.panel-label::before{content:'';width:3px;height:13px;background:var(--blue);border-radius:2px;display:inline-block;flex-shrink:0}
+.panel-label.teal::before{background:var(--teal)}
+.panel-label.purple::before{background:var(--purple)}
 
-/* TERMINAL */
-.terminal{background:#0f172a;border:1px solid #1e293b;border-radius:10px;overflow:hidden;margin-bottom:16px}
-.terminal-bar{background:#1e293b;padding:10px 16px;display:flex;align-items:center;gap:8px}
-.t-dot{width:10px;height:10px;border-radius:50%}
-.terminal-body{padding:16px;font-family:var(--mono);font-size:12px;line-height:1.9;color:#94a3b8}
-.t-green{color:#4ade80}
-.t-blue{color:#60a5fa}
-.t-white{color:#f1f5f9}
-.t-cursor{animation:blink 1s infinite;color:#60a5fa}
+/* ── METRICS ── */
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:600px){.metrics-row{grid-template-columns:repeat(2,1fr)}}
+.metric-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.metric-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em}
+.metric-num{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-1px}
+.metric-num.good{color:var(--teal)}
+.metric-num.warn{color:var(--amber)}
+.metric-num.bad{color:var(--red)}
+.metric-num.idle{color:var(--border2)}
+.metric-unit{font-size:12px;font-weight:400;color:var(--muted)}
 
-/* UPLOAD */
-.upload-zone{border:2px dashed var(--border2);border-radius:10px;padding:40px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
-.upload-zone:hover{border-color:var(--teal);background:var(--teal-pale)}
-.upload-zone .upload-icon{font-size:36px;color:var(--muted);margin-bottom:12px;display:block;transition:color .2s}
-.upload-zone:hover .upload-icon{color:var(--teal)}
-.upload-zone h4{font-size:15px;font-weight:700;color:var(--text2);margin-bottom:6px}
-.upload-zone p{font-family:var(--mono);font-size:11px;color:var(--muted)}
+/* ── STATUS BARS ── */
+.status-pill{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;width:100%;margin-bottom:10px}
+.status-pill.good{background:var(--teal-pale);color:var(--teal);border:1.5px solid #a8ddd8}
+.status-pill.bad{background:var(--red-pale);color:var(--red);border:1.5px solid #f5c6c2}
+.status-pill.idle{background:var(--surface);color:var(--muted);border:1.5px solid var(--border)}
+.status-pill.warn{background:var(--amber-pale);color:var(--amber);border:1.5px solid #fcd34d}
+
+/* ── AI FEEDBACK BOX ── */
+.ai-feedback-box{background:linear-gradient(135deg,#1e1b4b 0%,#1e3a5f 100%);border:1px solid #3730a3;border-radius:10px;padding:18px 20px;margin-top:12px;position:relative;overflow:hidden}
+.ai-feedback-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#818cf8,#38bdf8,#34d399)}
+.ai-feedback-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ai-chip{font-size:10px;font-family:var(--mono);background:rgba(129,140,248,.2);color:#a5b4fc;border:1px solid rgba(129,140,248,.3);padding:3px 8px;border-radius:4px;letter-spacing:.04em}
+.ai-model{font-size:10px;font-family:var(--mono);color:rgba(255,255,255,.3)}
+.ai-feedback-text{font-size:13px;color:rgba(255,255,255,.85);line-height:1.75;font-style:italic}
+.ai-feedback-text.loading{color:rgba(255,255,255,.35);font-style:normal}
+.ai-typing{display:inline-block;width:8px;height:14px;background:#818cf8;border-radius:2px;animation:typing .7s infinite alternate;margin-left:4px;vertical-align:middle}
+@keyframes typing{from{opacity:1}to{opacity:.2}}
+
+/* ── ALERT BOX ── */
+.alert-clinical{background:var(--amber-pale);border:1.5px solid #fcd34d;border-radius:8px;padding:12px 14px;font-size:12px;font-family:var(--mono);color:var(--amber);line-height:1.7;display:flex;gap:10px;align-items:flex-start;margin-top:10px}
+
+/* ── UPLOAD ── */
+.drop-zone{border:2px dashed var(--border2);border-radius:10px;padding:36px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--teal);background:var(--teal-pale)}
+.drop-icon{font-size:32px;margin-bottom:10px;display:block;transition:transform .2s}
+.drop-zone:hover .drop-icon{transform:translateY(-4px)}
+.drop-zone h4{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:4px}
+.drop-zone p{font-family:var(--mono);font-size:11px;color:var(--muted)}
 input[type=file]{display:none}
 
-/* BUTTONS */
-.btn-primary{background:var(--blue);color:#fff;font-family:var(--font);font-weight:700;font-size:13px;padding:10px 22px;border:none;border-radius:6px;cursor:pointer;transition:all .2s}
-.btn-primary:hover{background:var(--blue-light);transform:translateY(-1px);box-shadow:0 4px 14px rgba(26,95,158,.3)}
-.btn-teal{background:var(--teal);color:#fff;font-family:var(--font);font-weight:700;font-size:13px;padding:10px 22px;border:none;border-radius:6px;cursor:pointer;transition:all .2s}
-.btn-teal:hover{background:var(--teal-light);transform:translateY(-1px);box-shadow:0 4px 14px rgba(13,138,122,.3)}
-.btn-outline{background:transparent;color:var(--text2);font-family:var(--font);font-weight:700;font-size:13px;padding:10px 22px;border:1.5px solid var(--border2);border-radius:6px;cursor:pointer;transition:all .2s}
-.btn-outline:hover{border-color:var(--blue);color:var(--blue)}
-.btn-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
-.pill{font-family:var(--mono);font-size:10px;padding:5px 12px;border-radius:4px;font-weight:500;align-self:center}
+/* ── BUTTONS ── */
+.btn{font-family:var(--font);font-weight:600;font-size:13px;padding:9px 20px;border-radius:7px;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-light);box-shadow:0 4px 14px rgba(22,82,160,.3)}
+.btn-teal{background:var(--teal);color:#fff}
+.btn-teal:hover{background:var(--teal-light);box-shadow:0 4px 14px rgba(10,138,120,.3)}
+.btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn-purple{background:var(--purple);color:#fff}
+.btn-purple:hover{opacity:.9}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+
+/* ── PILLS ── */
+.pill{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:4px;font-weight:500;display:inline-flex;align-items:center;gap:5px}
 .pill-blue{background:var(--blue-pale);color:var(--blue);border:1px solid #b8d4ef}
 .pill-teal{background:var(--teal-pale);color:var(--teal);border:1px solid #a8ddd8}
 .pill-red{background:var(--red-pale);color:var(--red);border:1px solid #f5c6c2}
 .pill-idle{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+.pill-purple{background:var(--purple-pale);color:var(--purple);border:1px solid #c4b5fd}
 
-/* STACK */
-.stack-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.stack-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:18px;text-align:center;transition:all .2s;position:relative;overflow:hidden}
+/* ── SELECT ── */
+.field-label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:6px;font-weight:500}
+select{font-family:var(--mono);font-size:12px;padding:9px 12px;border:1.5px solid var(--border);border-radius:7px;background:var(--white);color:var(--text);width:100%;cursor:pointer;transition:border-color .2s;outline:none}
+select:focus{border-color:var(--blue)}
+
+/* ── LIVE FEED ── */
+.live-feed-wrap{position:relative;border-radius:10px;overflow:hidden;background:#080f1d;margin-bottom:14px;display:none}
+.live-feed-wrap img{width:100%;display:block;border-radius:10px}
+.live-badge{position:absolute;top:10px;left:10px;font-family:var(--mono);font-size:10px;background:rgba(192,57,43,.9);color:#fff;padding:4px 9px;border-radius:4px;display:flex;align-items:center;gap:5px}
+.live-badge-dot{width:6px;height:6px;border-radius:50%;background:#fca5a5;animation:pulse 1s infinite}
+
+/* ── SESSIONS TABLE ── */
+.sessions-table{width:100%;border-collapse:collapse;font-size:12px}
+.sessions-table th{text-align:left;font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:8px 12px;border-bottom:2px solid var(--border);font-weight:500}
+.sessions-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+.sessions-table tr:hover td{background:var(--surface)}
+.sessions-table tr:last-child td{border-bottom:none}
+.session-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px}
+.session-status.good{background:var(--teal-pale);color:var(--teal)}
+.session-status.bad{background:var(--red-pale);color:var(--red)}
+.session-issues{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.6}
+
+/* ── TECH STACK ── */
+.stack-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media(max-width:700px){.stack-grid{grid-template-columns:repeat(2,1fr)}}
+.stack-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;transition:all .2s;position:relative;overflow:hidden}
 .stack-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .stack-card:nth-child(1)::before{background:var(--blue)}
 .stack-card:nth-child(2)::before{background:var(--teal)}
 .stack-card:nth-child(3)::before{background:var(--amber)}
-.stack-card:nth-child(4)::before{background:#7c3aed}
-.stack-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}
-.stack-name{font-size:14px;font-weight:800;margin-bottom:4px;color:var(--text)}
-.stack-role{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.5}
+.stack-card:nth-child(4)::before{background:var(--purple)}
+.stack-card:nth-child(5)::before{background:#059669}
+.stack-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.stack-name{font-size:13px;font-weight:700;margin-bottom:4px;color:var(--text)}
+.stack-role{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.6}
 
-/* VITALS STRIP */
-.vitals-strip{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 20px;display:flex;align-items:center;gap:24px;margin-bottom:24px;overflow-x:auto}
-.vital{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.vital-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
-.vital-label{font-family:var(--mono);font-size:10px;color:var(--muted)}
-.vital-value{font-weight:800;font-size:15px;color:var(--text)}
-.vital-divider{width:1px;height:36px;background:var(--border);flex-shrink:0}
+/* ── HERO CANVAS ── */
+.hero-block{background:linear-gradient(135deg,var(--blue) 0%,#0e3a6e 100%);border-radius:12px;overflow:hidden;margin-bottom:28px;position:relative}
+.hero-content{padding:36px 36px 0;color:#fff;display:grid;grid-template-columns:1fr 340px;gap:32px;align-items:end}
+@media(max-width:800px){.hero-content{grid-template-columns:1fr;padding-bottom:24px}}
+.hero-eyebrow{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.5);margin-bottom:10px;letter-spacing:.06em}
+.hero-title{font-size:clamp(22px,2.8vw,34px);font-weight:800;line-height:1.2;letter-spacing:-.5px;margin-bottom:12px}
+.hero-title em{font-style:normal;color:#7dd3fc}
+.hero-desc{font-size:13px;color:rgba(255,255,255,.65);line-height:1.8;margin-bottom:20px;max-width:420px;font-family:var(--mono);font-weight:300}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:32px}
+.btn-hero-white{background:#fff;color:var(--blue);font-family:var(--font);font-weight:700;font-size:13px;padding:10px 20px;border:none;border-radius:7px;cursor:pointer;transition:all .2s}
+.btn-hero-white:hover{background:#e8f2ff;transform:translateY(-1px)}
+.btn-hero-outline{background:transparent;color:#fff;font-family:var(--font);font-weight:600;font-size:13px;padding:10px 20px;border:1.5px solid rgba(255,255,255,.3);border-radius:7px;cursor:pointer;transition:all .2s}
+.btn-hero-outline:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.6)}
+.hero-canvas-wrap{position:relative;align-self:end}
+.hero-canvas-wrap canvas{display:block;border-radius:10px 10px 0 0}
+.hud-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 0 0}
+.hud-box{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:8px 10px}
+.hud-lbl{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.4);margin-bottom:3px}
+.hud-val{font-family:var(--mono);font-size:15px;font-weight:600;color:#7dd3fc}
 
-/* FOOTER */
-footer{background:var(--blue);color:rgba(255,255,255,.7);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-top:48px}
-.footer-logo{color:#fff;font-weight:700;font-size:14px;font-family:var(--font)}
-.footer-links{display:flex;gap:20px}
-.footer-links span{cursor:pointer;transition:color .2s}
-.footer-links span:hover{color:#fff}
-
-@media(max-width:700px){
-  .hero-inner{grid-template-columns:1fr}
-  .monitor-card{display:none}
-  .modes{grid-template-columns:1fr}
-  .stack-grid{grid-template-columns:repeat(2,1fr)}
-  .metrics-grid{grid-template-columns:repeat(2,1fr)}
-  .vitals-strip{gap:12px}
-  .main{padding:24px 16px}
-}
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+/* ── SPINNER ── */
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.spinner-dark{border-color:rgba(0,0,0,.15);border-top-color:var(--blue)}
 @keyframes spin{to{transform:rotate(360deg)}}
-.result-image{width:100%;height:auto;border-radius:10px;margin-top:12px;border:1px solid var(--border);display:block}
+
+/* ── PAGE HEADER ── */
+.pg-header{margin-bottom:24px}
+.pg-header h1{font-size:20px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px}
+.pg-header p{font-size:13px;color:var(--muted)}
+
+/* ── RESULT IMAGE ── */
+.result-image{width:100%;height:auto;border-radius:8px;display:block;border:1px solid var(--border)}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:20px 0}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty-state .empty-icon{font-size:36px;margin-bottom:12px;opacity:.5}
+.empty-state p{font-size:13px}
 </style>
 </head>
 <body>
+<div class="app">
 
-<!-- ECG background -->
-<div class="ecg-bg">
-  <svg viewBox="0 0 1440 200" preserveAspectRatio="none">
-    <polyline points="0,100 200,100 220,100 240,60 260,140 280,20 300,180 320,100 340,100 540,100 560,100 580,60 600,140 620,20 640,180 660,100 680,100 880,100 900,100 920,60 940,140 960,20 980,180 1000,100 1020,100 1220,100 1240,100 1260,60 1280,140 1300,20 1320,180 1340,100 1440,100" fill="none" stroke="#1a5f9e" stroke-width="1.5"/>
-  </svg>
-</div>
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <div class="logo-icon">🏥</div>
+        <div class="logo-name">Posture<em>Med</em></div>
+      </div>
+      <div class="logo-sub">AI Physiotherapy Assistant</div>
+    </div>
 
-<!-- Alert bar -->
-<div class="alert-bar">
-  <div class="alert-dot"></div>
-  SYSTEM ONLINE — Patient Posture Monitoring Active — CV Module v1.0 — MediaPipe 0.10.35
-</div>
+    <div class="sidebar-section">Navigation</div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <span class="nav-icon">⬛</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="showPage('live')">
+        <span class="nav-icon">📷</span> Live Camera
+        <span class="nav-badge" id="live-nav-badge">off</span>
+      </div>
+      <div class="nav-item" onclick="showPage('upload')">
+        <span class="nav-icon">📁</span> Upload Analysis
+      </div>
+      <div class="nav-item" onclick="showPage('sessions')">
+        <span class="nav-icon">🗂</span> Session History
+      </div>
+    </nav>
 
-<!-- Nav -->
-<nav>
-  <div class="logo">
-    <div class="logo-cross">
-      <div class="logo-cross-bg"></div>
-      <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:0">
-        <div style="width:20px;height:6px;background:#fff;border-radius:1px"></div>
-        <div style="width:6px;height:14px;background:#fff;border-radius:1px;margin-top:-6px"></div>
+    <div class="sidebar-section">Stack</div>
+    <nav class="sidebar-nav">
+      <div class="nav-item" style="cursor:default;pointer-events:none;opacity:.7">
+        <span class="nav-icon">🦴</span> MediaPipe BlazePose
+      </div>
+      <div class="nav-item" style="cursor:default;pointer-events:none;opacity:.7">
+        <span class="nav-icon">🤖</span> Groq · Llama 3.3
+      </div>
+      <div class="nav-item" style="cursor:default;pointer-events:none;opacity:.7">
+        <span class="nav-icon">⚡</span> FastAPI · WebSocket
+      </div>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="sys-status">
+        <div class="sys-dot"></div>
+        System online · CV v1.0
       </div>
     </div>
-    <div class="logo-text">Posture<span>Med</span></div>
-  </div>
-  <div class="nav-right">
-    <!-- <div class="nav-status"><div class="nav-status-dot"></div> System active</div> -->
-    <!-- <div class="nav-badge">CV Project · B.Tech</div> -->
-  </div>
-</nav>
+  </aside>
 
-<!-- Hero -->
-<div class="hero">
-  <div class="hero-inner">
-    <div>
-      <div class="hero-tag">🏥 Physiotherapy AI Assistant</div>
-      <h1>Smart <em>posture monitoring</em> for physiotherapy patients</h1>
-      <p>Real-time skeletal tracking · Joint angle analysis · Instant deviation alerts · Live & upload modes</p>
-      <div class="hero-btns">
-        <button class="btn-white" onclick="scrollToSection('live-sec')">▶ Start live camera</button>
-        <button class="btn-ghost" onclick="scrollToSection('upload-sec')">↑ Upload patient file</button>
+  <!-- ── MAIN CONTENT ── -->
+  <div class="content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-title">PostureMed <span id="page-subtitle">Dashboard</span></div>
+      <div class="topbar-right">
+        <span class="topbar-badge ai">🤖 AI-powered · Groq LLM</span>
+        <span class="topbar-badge">MediaPipe 0.10</span>
       </div>
-    </div>
-    <div>
-      <div class="monitor-card">
-        <div class="monitor-header">
-          <div class="mh-dot" style="background:#ff5f57"></div>
-          <div class="mh-dot" style="background:#febc2e"></div>
-          <div class="mh-dot" style="background:#28c840"></div>
-          <span style="font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.4);margin-left:8px">posturemed — live feed</span>
-        </div>
-        <div class="monitor-screen">
-          <canvas id="hero-canvas"></canvas>
-          <div class="monitor-hud">
-            <div class="hud-top">
-              <div class="hud-rec"><div class="hud-rec-dot"></div> REC</div>
-              <div class="hud-patient">Patient ID: PT-2024-007</div>
+    </header>
+
+    <!-- ── DASHBOARD PAGE ── -->
+    <div class="page page-section active" id="page-dashboard">
+      <!-- Hero -->
+      <div class="hero-block">
+        <div class="hero-content">
+          <div>
+            <div class="hero-eyebrow">REAL-TIME PHYSIOTHERAPY AI</div>
+            <h1 class="hero-title">Smart <em>posture monitoring</em><br>powered by AI feedback</h1>
+            <p class="hero-desc">Skeletal tracking · Joint angle analysis · LLM clinical assessment · Live &amp; upload modes</p>
+            <div class="hero-btns">
+              <button class="btn-hero-white" onclick="showPage('live')">▶ Start live camera</button>
+              <button class="btn-hero-outline" onclick="showPage('upload')">↑ Upload patient file</button>
             </div>
-            <div class="hud-bottom">
-              <div class="hud-metric"><div class="hud-metric-label">Knee</div><div class="hud-metric-val" id="h-knee">--°</div></div>
-              <div class="hud-metric"><div class="hud-metric-label">Spine</div><div class="hud-metric-val" id="h-spine">--°</div></div>
-              <div class="hud-metric"><div class="hud-metric-label">Status</div><div class="hud-metric-val" id="h-status" style="color:#4ade80">--</div></div>
+          </div>
+          <div class="hero-canvas-wrap">
+            <canvas id="hero-canvas" width="320" height="220" style="opacity:.9"></canvas>
+            <div class="hud-strip">
+              <div class="hud-box"><div class="hud-lbl">Knee</div><div class="hud-val" id="h-knee">--°</div></div>
+              <div class="hud-box"><div class="hud-lbl">Spine</div><div class="hud-val" id="h-spine">--°</div></div>
+              <div class="hud-box"><div class="hud-lbl">Status</div><div class="hud-val" id="h-status" style="color:#4ade80">--</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-icon">🦴</div><div class="stat-val">33</div><div class="stat-label">Landmarks tracked</div></div>
+        <div class="stat-card"><div class="stat-icon">⚡</div><div class="stat-val">30+</div><div class="stat-label">FPS live stream</div></div>
+        <div class="stat-card"><div class="stat-icon">📐</div><div class="stat-val">8°</div><div class="stat-label">Smoothing window</div></div>
+        <div class="stat-card"><div class="stat-icon">🤖</div><div class="stat-val">AI</div><div class="stat-label">LLM clinical notes</div></div>
+      </div>
+
+      <!-- Mode cards -->
+      <div class="mode-grid">
+        <div class="mode-card live-card" onclick="showPage('live')">
+          <span class="mode-arrow">→</span>
+          <div class="mode-icon">📷</div>
+          <h3>Live camera mode</h3>
+          <p>Real-time skeletal tracking via webcam. Angles update every frame. Ideal for supervised physiotherapy sessions with instant AI feedback.</p>
+          <span class="mode-tag">WebSocket · 20fps</span>
+        </div>
+        <div class="mode-card upload-card" onclick="showPage('upload')">
+          <span class="mode-arrow">→</span>
+          <div class="mode-icon">📁</div>
+          <h3>Upload &amp; analyse</h3>
+          <p>Upload a photo or video of a patient session. Get an annotated skeleton overlay, joint angles, and a full AI clinical assessment report.</p>
+          <span class="mode-tag">JPG · PNG · MP4 · MOV</span>
+        </div>
+      </div>
+
+      <!-- Tech stack -->
+      <div class="pg-header" style="margin-bottom:14px"><h1 style="font-size:16px">Technology Stack</h1></div>
+      <div class="stack-grid">
+        <div class="stack-card"><div class="stack-name">MediaPipe</div><div class="stack-role">BlazePose<br>33 landmarks<br>Google pre-trained</div></div>
+        <div class="stack-card"><div class="stack-name">FastAPI</div><div class="stack-role">REST + WebSocket<br>Async endpoints<br>Auto Swagger UI</div></div>
+        <div class="stack-card"><div class="stack-name">OpenCV</div><div class="stack-role">Video capture<br>Frame processing<br>Skeleton overlay</div></div>
+        <div class="stack-card"><div class="stack-name">Groq LLM</div><div class="stack-role">Llama 3.3-70b<br>Clinical feedback<br>AI assessment</div></div>
+        <div class="stack-card"><div class="stack-name">SQLite</div><div class="stack-role">Session logging<br>History tracking<br>Persistent data</div></div>
+      </div>
+    </div>
+
+    <!-- ── LIVE PAGE ── -->
+    <div class="page page-section" id="page-live">
+      <div class="pg-header">
+        <h1>Live Camera Mode</h1>
+        <p>Real-time posture monitoring via webcam · WebSocket stream</p>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">Camera feed</div>
+        <div class="live-feed-wrap" id="live-feed-wrap">
+          <img id="live-feed-img" alt="Live feed"/>
+          <div class="live-badge"><div class="live-badge-dot"></div> LIVE</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="start-btn" onclick="startLive()">▶ Start camera</button>
+          <button class="btn btn-ghost" id="stop-btn" onclick="stopLive()">⏹ Stop</button>
+          <span class="pill pill-idle" id="live-pill">Stopped</span>
+        </div>
+      </div>
+
+      <div class="panel" id="live-metrics-panel" style="display:none">
+        <div class="panel-label">Real-time joint angles</div>
+        <div class="metrics-row">
+          <div class="metric-box"><div class="metric-lbl">Left knee</div><div class="metric-num idle" id="lm-lknee">--<span class="metric-unit">°</span></div></div>
+          <div class="metric-box"><div class="metric-lbl">Right knee</div><div class="metric-num idle" id="lm-rknee">--<span class="metric-unit">°</span></div></div>
+          <div class="metric-box"><div class="metric-lbl">Spine</div><div class="metric-num idle" id="lm-spine">--<span class="metric-unit">°</span></div></div>
+          <div class="metric-box"><div class="metric-lbl">Shoulder</div><div class="metric-num idle" id="lm-shoulder">--<span class="metric-unit">°</span></div></div>
+        </div>
+        <div class="status-pill idle" id="live-status-pill">
+          <span>⏳</span><span id="live-status-txt">Waiting for data...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── UPLOAD PAGE ── -->
+    <div class="page page-section" id="page-upload">
+      <div class="pg-header">
+        <h1>Upload &amp; Analyse</h1>
+        <p>Upload a patient image or video for full AI-powered posture assessment</p>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">Configuration</div>
+        <label class="field-label">Exercise type</label>
+        <select id="exercise-select" style="margin-bottom:0">
+          <option value="standing">Standing posture — side view</option>
+          <option value="standing_front">Standing posture — front view</option>
+          <option value="squat">Squat</option>
+          <option value="lunge">Lunge</option>
+          <option value="shoulder_raise">Shoulder raise</option>
+          <option value="bridge">Bridge</option>
+          <option value="warrior">Warrior pose</option>
+        </select>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label teal">Upload file</div>
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-in').click()"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <span class="drop-icon">🩻</span>
+          <h4>Drop patient media here or click to browse</h4>
+          <p>JPG · PNG · MP4 · MOV — ensure full body is visible in frame</p>
+        </div>
+        <input type="file" id="file-in" accept="image/*,video/*" onchange="handleFile(event)"/>
+
+        <div id="file-preview" style="display:none;margin-top:16px">
+          <div id="preview-container" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden"></div>
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn btn-teal" id="analyse-btn" onclick="analyseFile()">🔬 Analyse posture</button>
+            <button class="btn btn-ghost" onclick="resetFile()">↺ Reset</button>
+            <span class="pill pill-teal" id="upload-pill">File loaded</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="upload-results" style="display:none">
+        <div class="panel">
+          <div class="panel-label">Joint angles</div>
+          <div class="metrics-row">
+            <div class="metric-box"><div class="metric-lbl">Left knee</div><div class="metric-num idle" id="um-lknee">--<span class="metric-unit">°</span></div></div>
+            <div class="metric-box"><div class="metric-lbl">Right knee</div><div class="metric-num idle" id="um-rknee">--<span class="metric-unit">°</span></div></div>
+            <div class="metric-box"><div class="metric-lbl">Spine</div><div class="metric-num idle" id="um-spine">--<span class="metric-unit">°</span></div></div>
+            <div class="metric-box"><div class="metric-lbl">Shoulder</div><div class="metric-num idle" id="um-shoulder">--<span class="metric-unit">°</span></div></div>
+          </div>
+          <div class="status-pill idle" id="upload-status-pill">
+            <span>⏳</span><span id="upload-status-txt">—</span>
+          </div>
+          <div id="upload-issues-box" class="alert-clinical" style="display:none">
+            ⚕️ <span id="upload-issues-txt"></span>
+          </div>
+        </div>
+
+        <!-- AI Feedback -->
+        <div class="panel">
+          <div class="panel-label purple">AI Clinical Assessment</div>
+          <div class="ai-feedback-box">
+            <div class="ai-feedback-header">
+              <span class="ai-chip">🤖 GROQ · LLAMA 3.3-70B</span>
+              <span class="ai-model">Clinical reasoning model</span>
+            </div>
+            <div class="ai-feedback-text loading" id="ai-feedback-text">
+              AI assessment will appear here after analysis...
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Main -->
-<div class="main">
-
-  <!-- Vitals strip -->
-  <div class="vitals-strip">
-    <div class="vital">
-      <div class="vital-icon" style="background:var(--blue-pale);color:var(--blue)">👁</div>
-      <div><div class="vital-label">Detection model</div><div class="vital-value">MediaPipe BlazePose</div></div>
-    </div>
-    <div class="vital-divider"></div>
-    <div class="vital">
-      <div class="vital-icon" style="background:var(--teal-pale);color:var(--teal)">🦴</div>
-      <div><div class="vital-label">Landmarks tracked</div><div class="vital-value">33 joints</div></div>
-    </div>
-    <div class="vital-divider"></div>
-    <div class="vital">
-      <div class="vital-icon" style="background:#fef3c7;color:var(--amber)">⚡</div>
-      <div><div class="vital-label">Processing speed</div><div class="vital-value">30+ FPS</div></div>
-    </div>
-    <div class="vital-divider"></div>
-    <div class="vital">
-      <div class="vital-icon" style="background:var(--red-pale);color:var(--red)">📐</div>
-      <div><div class="vital-label">Angles measured</div><div class="vital-value">Knee · Spine · Shoulder</div></div>
-    </div>
-    <div class="vital-divider"></div>
-    <div class="vital">
-      <div class="vital-icon" style="background:#ede9fe;color:#7c3aed">🖥</div>
-      <div><div class="vital-label">Input modes</div><div class="vital-value">Live cam + Upload</div></div>
-    </div>
-  </div>
-
-  <!-- Modes -->
-  <div class="section">
-    <div class="sec-header">
-      <span class="sec-num">01</span>
-      <h2>Select monitoring mode</h2>
-      <div class="sec-line"></div>
-    </div>
-    <div class="modes">
-      <div class="mode-card live-card" onclick="scrollToSection('live-sec')">
-        <div class="mode-icon">📷</div>
-        <h3>Live camera mode</h3>
-        <p>Connects to patient's webcam for real-time skeletal tracking. Angles update every frame. Ideal for supervised physiotherapy sessions.</p>
-        <div class="mode-pill">cv2.VideoCapture(0) · real-time</div>
+    <!-- ── SESSIONS PAGE ── -->
+    <div class="page page-section" id="page-sessions">
+      <div class="pg-header">
+        <h1>Session History</h1>
+        <p>All saved analysis sessions from the SQLite database</p>
       </div>
-      <!-- <div class="mode-card upload-card" onclick="scrollToSection('upload-sec')">
-        <div class="mode-icon">📁</div>
-        <h3>Upload media mode</h3>
-        <p>Analyse a pre-recorded image or video of a patient. Outputs annotated file with skeleton overlay. Ideal for remote review.</p>
-        <div class="mode-pill">static_image_mode=True · JPG/MP4</div>
-      </div> -->
-      <div class="mode-card upload-card" onclick="scrollToSection('upload-sec')">
-  <div class="mode-icon">📁</div>
-  <h3>Upload media mode</h3>
-  <p>Already have a recorded session? Upload a photo or video and get a full posture breakdown — annotated skeleton, joint angles, and correction notes.</p>
-  <div class="mode-pill">static_image_mode=True · JPG/MP4</div>
-</div>
-    </div>
-  </div>
-
-  <!-- Live mode -->
-  <div class="section" id="live-sec">
-    <div class="sec-header">
-      <span class="sec-num">02</span>
-      <h2>Live camera mode</h2>
-      <div class="sec-line"></div>
-    </div>
-    <div class="panel">
-  <div class="panel-title">Live camera feed</div>
-
-  <!-- Live video feed display -->
-  <div id="live-feed-container" style="display:none;margin-bottom:16px">
-    <div style="position:relative;border-radius:10px;overflow:hidden;background:#0c1829">
-      <img id="live-feed-img" style="width:100%;border-radius:10px;display:block"/>
-      <div style="position:absolute;top:10px;left:10px;font-family:var(--mono);font-size:10px;
-                  background:rgba(192,57,43,.85);color:#fff;padding:3px 8px;border-radius:3px;
-                  display:flex;align-items:center;gap:5px">
-        <div style="width:6px;height:6px;border-radius:50%;background:#ff9999;animation:blink 1s infinite"></div>
-        LIVE
-      </div>
-    </div>
-  </div>
-
-  <!-- Terminal block -->
-  <div class="terminal">
-    <div class="terminal-bar">
-      <div class="t-dot" style="background:#ff5f57"></div>
-      <div class="t-dot" style="background:#febc2e"></div>
-      <div class="t-dot" style="background:#28c840"></div>
-      <span style="font-family:var(--mono);font-size:10px;color:#64748b;margin-left:8px">bash — Patient-Posture-Monitoring</span>
-    </div>
-    <div class="terminal-body">
-      <span class="t-green">(.venv)</span> <span class="t-blue">PS</span>
-      <span class="t-white">C:\...\Patient-Posture-Monitoring&gt;</span> uvicorn api:app --reload<br>
-      <span class="t-white">INFO: Application startup complete.</span><br>
-      <span class="t-white">INFO: WebSocket connected — camera active</span><br>
-      <span class="t-blue">Streaming frames at 20fps <span class="t-cursor">▌</span></span>
-    </div>
-  </div>
-
-  <div class="btn-row">
-    <button class="btn-primary" id="start-btn" onclick="startLive()">▶ Start live camera</button>
-    <button class="btn-outline" id="stop-btn" onclick="stopLive()">⏹ Stop</button>
-    <div class="pill pill-idle" id="live-pill">Stopped</div>
-  </div>
-</div>
-    <div class="panel" id="live-metrics" style="display:none;margin-top:16px">
-      <div class="panel-title">Real-time joint analysis — Patient PT-2024-007</div>
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-label">Left knee</div>
-          <div class="metric-val idle" id="lm-knee">--<span class="metric-unit">°</span></div>
+      <div class="panel">
+        <div class="card-header" style="padding:0 0 14px;border-bottom:1px solid var(--border);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div class="card-title">Recent sessions</div>
+            <div class="card-subtitle">Last 50 records from posturemed.db</div>
+          </div>
+          <button class="btn btn-ghost" onclick="loadSessions()" style="font-size:12px">↺ Refresh</button>
         </div>
-        <div class="metric-card">
-          <div class="metric-label">Spine angle</div>
-          <div class="metric-val idle" id="lm-spine">--<span class="metric-unit">°</span></div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Shoulder</div>
-          <div class="metric-val idle" id="lm-shoulder">--<span class="metric-unit">°</span></div>
-        </div>
-      </div>
-      <div class="status-bar idle" id="live-status">
-        <span class="status-icon">⏳</span>
-        <span id="live-status-txt">Waiting for data...</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Upload mode -->
-  <div class="section" id="upload-sec">
-    <div class="sec-header">
-      <span class="sec-num">03</span>
-      <h2>Upload media mode</h2>
-      <div class="sec-line"></div>
-    </div>
-    <div class="panel">
-      <div class="panel-title">Upload patient image or video</div>
-      <!-- Exercise selector -->
-<div style="margin-bottom:12px">
-    <label style="font-family:var(--mono);font-size:10px;color:var(--muted);
-                  text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:6px">
-        Select exercise type
-    </label>
-    <select id="exercise-select" style="font-family:var(--mono);font-size:12px;
-        padding:8px 12px;border:1px solid var(--border);border-radius:6px;
-        background:var(--white);color:var(--text);width:100%;cursor:pointer">
-        <option value="standing">Standing posture (side view)</option>
-        <option value="standing_front">Standing posture (front view)</option>
-        <option value="squat">Squat</option>
-        <option value="lunge">Lunge</option>
-        <option value="shoulder_raise">Shoulder raise</option>
-        <option value="bridge">Bridge</option>
-        <option value="warrior">Warrior pose</option>
-    </select>
-</div>
-
-<div class="upload-zone" onclick="document.getElementById('file-in').click()">
-        <span class="upload-icon">🩻</span>
-        <h4>Drop patient media here</h4>
-        <p>JPG · PNG · MP4 · MOV — ensure full body is visible in frame</p>
-      </div>
-      <input type="file" id="file-in" accept="image/*,video/*" onchange="handleFile(event)"/>
-
-      <div id="file-preview" style="display:none;margin-top:16px">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center" id="preview-container"></div>
-        <div class="btn-row" style="margin-top:12px">
-          <button class="btn-teal" onclick="analyseFile()">🔬 Analyse posture</button>
-          <button class="btn-outline" onclick="resetFile()">↺ Reset</button>
-          <div class="pill pill-teal" id="upload-pill">File loaded</div>
+        <div id="sessions-container">
+          <div class="empty-state">
+            <div class="empty-icon">🗂</div>
+            <p>No sessions yet. Analyse a posture to start logging.</p>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="panel" id="upload-results" style="display:none;margin-top:16px">
-      <div class="panel-title">Analysis report — uploaded media</div>
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-label">Left knee</div>
-          <div class="metric-val good" id="um-knee">174.6<span class="metric-unit">°</span></div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Spine angle</div>
-          <div class="metric-val warn" id="um-spine">127.8<span class="metric-unit">°</span></div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Shoulder</div>
-          <div class="metric-val warn" id="um-shoulder">125.9<span class="metric-unit">°</span></div>
-        </div>
-      </div>
-      <div class="status-bar bad" id="upload-status-bar">
-        <span class="status-icon">⚠️</span>
-        <span>Needs correction — Spine and shoulder angles out of safe range</span>
-      </div>
-      <div class="alert-box">
-        ⚕️ <span><strong>Clinical note:</strong> Spine angle 127.8° is below the safe threshold of 150°. Patient is exhibiting forward lean during exercise. Recommend verbal correction and reduce exercise load until alignment is achieved.</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tech stack -->
-  <div class="section">
-    <div class="sec-header">
-      <span class="sec-num">04</span>
-      <h2>Technology stack</h2>
-      <div class="sec-line"></div>
-    </div>
-    <div class="stack-grid">
-      <div class="stack-card">
-        <div class="stack-name">MediaPipe</div>
-        <div class="stack-role">Pose estimation<br>33 body landmarks<br>Pre-trained by Google</div>
-      </div>
-      <div class="stack-card">
-        <div class="stack-name">OpenCV</div>
-        <div class="stack-role">Video capture<br>Frame processing<br>Skeleton overlay</div>
-      </div>
-      <div class="stack-card">
-        <div class="stack-name">NumPy</div>
-        <div class="stack-role">Vector math<br>Angle calculation<br>Dot product logic</div>
-      </div>
-      <div class="stack-card">
-        <div class="stack-name">Python 3.x</div>
-        <div class="stack-role">Core pipeline<br>Modular architecture<br>Rule-based analyzer</div>
-      </div>
-    </div>
-  </div>
-
-</div><!-- end main -->
-
-<footer>
-  <div class="footer-logo">PostureMed</div>
-  <div>Patient Posture Monitoring System — Computer Vision Project</div>
-  <div class="footer-links">
-    <span>MediaPipe 0.10.35</span>
-    <span>OpenCV</span>
-    <span>Python</span>
-  </div>
-</footer>
+  </div><!-- end content -->
+</div><!-- end app -->
 
 <script>
-// Hero canvas skeleton animation
+// ── PAGE NAVIGATION ──────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const subtitles = {dashboard:'Dashboard',live:'Live Camera',upload:'Upload Analysis',sessions:'Session History'};
+  document.getElementById('page-subtitle').textContent = subtitles[name] || '';
+
+  // highlight sidebar item
+  const items = document.querySelectorAll('.nav-item');
+  const idx = {dashboard:0,live:1,upload:2,sessions:3};
+  if (items[idx[name]]) items[idx[name]].classList.add('active');
+
+  if (name === 'sessions') loadSessions();
+}
+
+// ── HERO CANVAS ANIMATION ────────────────────────────
 const canvas = document.getElementById('hero-canvas');
 const ctx = canvas.getContext('2d');
-let t=0, animRunning=true;
-
-function resizeCanvas(){
-  const box = canvas.parentElement;
-  canvas.width = box.clientWidth;
-  canvas.height = box.clientHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
-function drawSkeleton(){
-  resizeCanvas();
-  const w=canvas.width, h=canvas.height;
-  ctx.fillStyle='#0c1829';
+let t = 0;
+function drawHero() {
+  const w = canvas.width, h = canvas.height;
+  ctx.fillStyle = 'rgba(5,15,35,0.92)';
   ctx.fillRect(0,0,w,h);
-
-  // Scanline effect
-  for(let y=0;y<h;y+=4){
-    ctx.fillStyle='rgba(0,0,0,0.08)';
-    ctx.fillRect(0,y,w,2);
-  }
-
-  const cx=w/2, cy=h/2;
-  const s=Math.min(w,h)/300;
-  const sway=Math.sin(t*0.025)*5*s;
-  const bob=Math.sin(t*0.04)*2*s;
-
+  for(let y=0;y<h;y+=3){ctx.fillStyle='rgba(0,0,0,0.06)';ctx.fillRect(0,y,w,1.5)}
+  const cx=w/2, cy=h/2+10, s=Math.min(w,h)/310;
+  const sw=Math.sin(t*0.022)*5*s, bob=Math.sin(t*0.038)*2*s;
   const J={
-    head:[cx+sway,cy-105*s+bob],
-    neck:[cx+sway,cy-78*s+bob],
-    ls:[cx-42*s+sway,cy-56*s+bob],
-    rs:[cx+42*s+sway,cy-56*s+bob],
-    le:[cx-60*s+sway,cy-12*s+bob],
-    re:[cx+60*s+sway,cy-12*s+bob],
-    lw:[cx-66*s+sway,cy+28*s+bob],
-    rw:[cx+66*s+sway,cy+28*s+bob],
-    lh:[cx-20*s+sway,cy+30*s],
-    rh:[cx+20*s+sway,cy+30*s],
-    lk:[cx-22*s+sway*.4,cy+86*s],
-    rk:[cx+22*s+sway*.4,cy+86*s],
-    la:[cx-22*s+sway*.15,cy+140*s],
-    ra:[cx+22*s+sway*.15,cy+140*s]
+    head:[cx+sw,cy-92*s+bob], neck:[cx+sw,cy-68*s+bob],
+    ls:[cx-38*s+sw,cy-50*s+bob], rs:[cx+38*s+sw,cy-50*s+bob],
+    le:[cx-55*s+sw,cy-12*s+bob], re:[cx+55*s+sw,cy-12*s+bob],
+    lw:[cx-60*s+sw,cy+24*s+bob], rw:[cx+60*s+sw,cy+24*s+bob],
+    lh:[cx-18*s+sw,cy+26*s],    rh:[cx+18*s+sw,cy+26*s],
+    lk:[cx-20*s+sw*.4,cy+74*s], rk:[cx+20*s+sw*.4,cy+74*s],
+    la:[cx-20*s+sw*.15,cy+120*s],ra:[cx+20*s+sw*.15,cy+120*s]
   };
-
-  // Glow lines
-  ctx.shadowBlur=8;
-  ctx.shadowColor='rgba(46,127,212,0.6)';
-  ctx.strokeStyle='rgba(46,127,212,0.8)';
-  ctx.lineWidth=2*s;
-  ctx.lineCap='round';
-
-  const conns=[['head','neck'],['neck','ls'],['neck','rs'],
-    ['ls','le'],['le','lw'],['rs','re'],['re','rw'],
-    ['ls','lh'],['rs','rh'],['lh','rh'],
-    ['lh','lk'],['lk','la'],['rh','rk'],['rk','ra']];
-
-  conns.forEach(([a,b])=>{
+  ctx.shadowBlur=7; ctx.shadowColor='rgba(56,189,248,.5)';
+  ctx.strokeStyle='rgba(56,189,248,.75)'; ctx.lineWidth=1.8*s; ctx.lineCap='round';
+  [['head','neck'],['neck','ls'],['neck','rs'],['ls','le'],['le','lw'],
+   ['rs','re'],['re','rw'],['ls','lh'],['rs','rh'],['lh','rh'],
+   ['lh','lk'],['lk','la'],['rh','rk'],['rk','ra']].forEach(([a,b])=>{
     ctx.beginPath();ctx.moveTo(...J[a]);ctx.lineTo(...J[b]);ctx.stroke();
   });
-
-  ctx.shadowBlur=12;
-  ctx.shadowColor='rgba(20,184,166,.8)';
-  ctx.fillStyle='#14b8a6';
-  Object.values(J).forEach(([x,y])=>{
-    ctx.beginPath();ctx.arc(x,y,4*s,0,Math.PI*2);ctx.fill();
-  });
+  ctx.shadowBlur=10; ctx.shadowColor='rgba(52,211,153,.8)'; ctx.fillStyle='#34d399';
+  Object.values(J).forEach(([x,y])=>{ctx.beginPath();ctx.arc(x,y,3.5*s,0,Math.PI*2);ctx.fill();});
   ctx.shadowBlur=0;
-
-  // Update HUD
-  const knee=(172+Math.sin(t*0.06)*10).toFixed(1);
-  const spine=(163+Math.sin(t*0.04)*14).toFixed(1);
+  const knee=(172+Math.sin(t*0.055)*10).toFixed(1);
+  const spine=(163+Math.sin(t*0.038)*14).toFixed(1);
   const ok=parseFloat(knee)>160&&parseFloat(spine)>150;
   document.getElementById('h-knee').textContent=knee+'°';
   document.getElementById('h-spine').textContent=spine+'°';
-  const hst=document.getElementById('h-status');
-  hst.textContent=ok?'Good':'Adjust';
-  hst.style.color=ok?'#4ade80':'#fca5a5';
-
+  const hs=document.getElementById('h-status');
+  hs.textContent=ok?'Good':'Adjust'; hs.style.color=ok?'#4ade80':'#fca5a5';
   t++;
-  if(animRunning) requestAnimationFrame(drawSkeleton);
+  requestAnimationFrame(drawHero);
 }
-drawSkeleton();
+drawHero();
 
-// Scroll helper
-function scrollToSection(id){
-  document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-// Live demo
+// ── LIVE WEBSOCKET ───────────────────────────────────
 let ws = null;
-
 function startLive() {
-    const pill    = document.getElementById('live-pill');
-    const feedCont = document.getElementById('live-feed-container');
-    const feedImg  = document.getElementById('live-feed-img');
-
-    pill.textContent = 'Connecting...';
-    pill.className   = 'pill pill-blue';
-
-    ws = new WebSocket('ws://localhost:8000/ws/live');
-
-    ws.onopen = () => {
-        console.log('WebSocket connected');
-        pill.textContent = '● Live';
-        pill.className   = 'pill pill-teal';
-        feedCont.style.display = 'block';
-        document.getElementById('live-metrics').style.display = 'block';
-    };
-
-    ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-
-        // Show camera error if any
-        if (data.error) {
-            pill.textContent = '✗ ' + data.error;
-            pill.className = 'pill pill-red';
-            return;
-        }
-
-        // Update live video frame
-        if (data.image) {
-            feedImg.src = data.image;
-        }
-
-        // Update real angle metrics
-        if (data.angles && Object.keys(data.angles).length > 0) {
-            const kv  = data.angles.left_knee;
-            const sv  = data.angles.spine;
-            const shv = data.angles.shoulder;
-
-            const setM = (id, val, cls) => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.innerHTML = val + '<span class="metric-unit">°</span>';
-                    el.className = 'metric-val ' + cls;
-                }
-            };
-
-            setM('lm-knee',     kv.toFixed(1),  kv  > 160 ? 'good' : 'bad');
-            setM('lm-spine',    sv.toFixed(1),  sv  > 150 ? 'good' : 'warn');
-            setM('lm-shoulder', shv.toFixed(1), shv > 20  ? 'good' : 'warn');
-
-            // Update hero HUD too
-            document.getElementById('h-knee').textContent  = kv.toFixed(1) + '°';
-            document.getElementById('h-spine').textContent = sv.toFixed(1) + '°';
-            const hst = document.getElementById('h-status');
-            const ok  = kv > 160 && sv > 150;
-            hst.textContent  = ok ? 'Good' : 'Adjust';
-            hst.style.color  = ok ? '#4ade80' : '#fca5a5';
-        }
-
-        // Update status bar
-        if (data.analysis) {
-            const ok  = data.analysis.status === 'Good';
-            const bar = document.getElementById('live-status');
-            const txt = document.getElementById('live-status-txt');
-            if (bar) bar.className = 'status-bar ' + (ok ? 'good' : 'bad');
-            const icon = bar?.querySelector('.status-icon');
-            if (icon) icon.textContent = ok ? '✅' : '⚠️';
-            if (txt)  txt.textContent  = ok
-                ? 'Good posture — all angles within safe range'
-                : 'Needs correction — ' + (data.analysis.issues?.join(', ') || '');
-        }
-    };
-
-    ws.onerror = (err) => {
-        console.error('WebSocket error:', err);
-        pill.textContent = '✗ Connection failed';
-        pill.className   = 'pill pill-red';
-    };
-
-    ws.onclose = () => {
-        console.log('WebSocket closed');
-        pill.textContent = 'Stopped';
-        pill.className   = 'pill pill-idle';
-        feedCont.style.display = 'none';
-    };
+  const pill = document.getElementById('live-pill');
+  pill.textContent='Connecting…'; pill.className='pill pill-blue';
+  ws = new WebSocket('ws://localhost:8000/ws/live');
+  ws.onopen = () => {
+    pill.innerHTML='<span style="color:#4ade80">●</span> Live';
+    pill.className='pill pill-teal';
+    document.getElementById('live-feed-wrap').style.display='block';
+    document.getElementById('live-metrics-panel').style.display='block';
+    document.getElementById('live-nav-badge').textContent='live';
+  };
+  ws.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    if (data.error) { pill.textContent='✗ '+data.error; pill.className='pill pill-red'; return; }
+    if (data.image) document.getElementById('live-feed-img').src=data.image;
+    if (data.angles && Object.keys(data.angles).length) {
+      const a=data.angles;
+      setMetric('lm-lknee', a.left_knee,  a.left_knee  > 160?'good':'bad');
+      setMetric('lm-rknee', a.right_knee, a.right_knee > 160?'good':'bad');
+      setMetric('lm-spine', a.spine,      a.spine      > 150?'good':'warn');
+      setMetric('lm-shoulder', a.left_shoulder||a.shoulder, (a.left_shoulder||a.shoulder) > 20?'good':'warn');
+    }
+    if (data.analysis) {
+      const ok=data.analysis.status==='Good';
+      const pill2=document.getElementById('live-status-pill');
+      const txt=document.getElementById('live-status-txt');
+      pill2.className='status-pill '+(ok?'good':'bad');
+      pill2.querySelector('span').textContent=ok?'✅':'⚠️';
+      txt.textContent=ok?'Good posture — all angles within safe range':'Needs correction — '+(data.analysis.issues?.join(', ')||'');
+    }
+  };
+  ws.onerror = () => { pill.textContent='✗ Connection failed'; pill.className='pill pill-red'; };
+  ws.onclose = () => {
+    pill.textContent='Stopped'; pill.className='pill pill-idle';
+    document.getElementById('live-feed-wrap').style.display='none';
+    document.getElementById('live-nav-badge').textContent='off';
+  };
 }
-
 function stopLive() {
-    if (ws) {
-        ws.close();
-        ws = null;
-    }
-
-    document.getElementById('live-pill').textContent = 'Stopped';
-    document.getElementById('live-pill').className   = 'pill pill-idle';
-    document.getElementById('live-feed-container').style.display = 'none';
-
-    ['lm-knee', 'lm-spine', 'lm-shoulder'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.innerHTML  = '--<span class="metric-unit">°</span>';
-            el.className  = 'metric-val idle';
-        }
-    });
-
-    const bar = document.getElementById('live-status');
-    const txt = document.getElementById('live-status-txt');
-    if (bar) bar.className  = 'status-bar idle';
-    if (txt) txt.textContent = 'Waiting for data...';
-}
-// Upload file preview
-function handleFile(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const cont = document.getElementById('preview-container');
-    cont.innerHTML = '';
-    if (file.type.startsWith('image')) {
-        const img = document.createElement('img');
-        img.src = URL.createObjectURL(file);
-        img.style.cssText = 'width:100%;height:auto;display:block';
-        cont.appendChild(img);
-    } else {
-        const vid = document.createElement('video');
-        vid.src = URL.createObjectURL(file);
-        vid.controls = true;
-        vid.style.cssText = 'max-width:100%;max-height:360px';
-        cont.appendChild(vid);
-    }
-    document.getElementById('file-preview').style.display = 'block';
-    document.getElementById('upload-results').style.display = 'none';
+  if(ws){ws.close();ws=null;}
+  ['lm-lknee','lm-rknee','lm-spine','lm-shoulder'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.innerHTML='--<span class="metric-unit">°</span>';el.className='metric-num idle';}
+  });
 }
 
-// Analyse uploaded file
+function setMetric(id, val, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (val == null || isNaN(val)) {
+    el.innerHTML = '<span style="font-size:11px;color:var(--muted)">Occluded</span>';
+    el.className = 'metric-num idle';
+    return;
+  }
+  el.innerHTML = parseFloat(val).toFixed(1) + '<span class="metric-unit">°</span>';
+  el.className = 'metric-num ' + cls;
+}
+
+// ── DRAG & DROP ──────────────────────────────────────
+function handleDragOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('dragover')}
+function handleDragLeave(){document.getElementById('drop-zone').classList.remove('dragover')}
+function handleDrop(e){
+  e.preventDefault();document.getElementById('drop-zone').classList.remove('dragover');
+  const f=e.dataTransfer.files[0];
+  if(f) processFile(f);
+}
+function handleFile(e){const f=e.target.files[0];if(f)processFile(f);}
+function processFile(file){
+  const cont=document.getElementById('preview-container');
+  cont.innerHTML='';
+  if(file.type.startsWith('image')){
+    const img=document.createElement('img');
+    img.src=URL.createObjectURL(file);
+    img.style.cssText='width:100%;height:auto;display:block';
+    cont.appendChild(img);
+  } else {
+    const vid=document.createElement('video');
+    vid.src=URL.createObjectURL(file);
+    vid.controls=true;
+    vid.style.cssText='width:100%;max-height:360px;display:block';
+    cont.appendChild(vid);
+  }
+  document.getElementById('file-preview').style.display='block';
+  document.getElementById('upload-results').style.display='none';
+  // store file for analyseFile
+  window._currentFile = file;
+}
+
+// ── ANALYSE FILE ─────────────────────────────────────
 async function analyseFile() {
-    const file = document.getElementById('file-in').files[0];
-    if (!file) return;
+  const file = window._currentFile || document.getElementById('file-in').files[0];
+  if(!file) return;
 
-    const pill = document.getElementById('upload-pill');
-    pill.innerHTML = '<span class="spinner"></span>Analysing...';
-    pill.className = 'pill pill-blue';
+  const pill=document.getElementById('upload-pill');
+  const btn=document.getElementById('analyse-btn');
+  pill.innerHTML='<span class="spinner"></span>Analysing…';
+  pill.className='pill pill-blue';
+  btn.disabled=true;
 
-    document.querySelector('[onclick="analyseFile()"]').disabled = true;
+  // Show AI box in loading state
+  document.getElementById('upload-results').style.display='block';
+  const aiTxt=document.getElementById('ai-feedback-text');
+  aiTxt.className='ai-feedback-text loading';
+  aiTxt.innerHTML='Running AI clinical assessment<span class="ai-typing"></span>';
 
-    const formData = new FormData();
-    formData.append('file', file);
+  const formData=new FormData();
+  formData.append('file',file);
+  const exercise=document.getElementById('exercise-select').value;
+  const endpoint=`${file.type.startsWith('video')?'/analyse/video':'/analyse/image'}?exercise=${exercise}`;
 
-    const isVideo  = file.type.startsWith('video');
-    const exercise = document.getElementById('exercise-select')?.value || 'standing';
-    const base     = isVideo ? '/analyse/video' : '/analyse/image';
-    const endpoint = `${base}?exercise=${exercise}`;
+  try {
+    const res=await fetch(endpoint,{method:'POST',body:formData});
+    if(!res.ok){const e=await res.json();throw new Error(e.error||'Server error');}
+    const data=await res.json();
 
-    try {
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            body: formData
-        });
-
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.error || 'Server error');
-        }
-
-        const data = await response.json();
-
-        // Update angle metrics
-        const setMetric = (id, val, cls) => {
-            const el = document.getElementById(id);
-            el.innerHTML = val + '<span class="metric-unit">°</span>';
-            el.className = 'metric-val ' + cls;
-        };
-
-        if (data.angles && Object.keys(data.angles).length > 0) {
-            const kv  = data.angles.left_knee;
-            const sv  = data.angles.spine;
-            const shv = data.angles.shoulder;
-            setMetric('um-knee',     kv,  kv  > 160 ? 'good' : 'bad');
-            setMetric('um-spine',    sv,  sv  > 150 ? 'good' : 'warn');
-            setMetric('um-shoulder', shv, shv > 20  ? 'good' : 'warn');
-        }
-
-        // Show annotated image
-        if (data.image) {
-            const cont = document.getElementById('preview-container');
-            cont.innerHTML = '';
-            const img = document.createElement('img');
-            img.src = data.image;
-            img.className = 'result-image';
-            cont.appendChild(img);
-        }
-
-        // Show annotated video
-        if (data.video_url) {
-            const cont = document.getElementById('preview-container');
-            cont.innerHTML = '';
-            const vid = document.createElement('video');
-            vid.src = data.video_url + '?t=' + Date.now();
-            vid.controls = true;
-            vid.style.cssText = 'width:100%;height:auto;border-radius:8px;display:block';
-            cont.appendChild(vid);
-        }
-
-        // Update status bar
-        const ok  = data.analysis && data.analysis.status === 'Good';
-        const bar = document.getElementById('upload-status-bar');
-        bar.className = 'status-bar ' + (ok ? 'good' : 'bad');
-        const issues = data.analysis?.issues || [];
-        bar.querySelector('span:last-child').innerHTML =
-          ok
-          ? 'Good posture — all angles within safe range'
-          : 'Needs correction:<br>• ' + issues.join('<br>• ');
-
-        // Update alert box
-        const alertBox = document.querySelector('.alert-box span');
-        if (alertBox) {
-            if (!ok && issues) {
-                alertBox.closest('.alert-box').style.display = 'flex';
-                alertBox.innerHTML = `<strong>Clinical note:</strong> ${issues}. Please advise patient to correct posture before continuing.`;
-            } else {
-                alertBox.closest('.alert-box').style.display = 'none';
-            }
-        }
-
-        document.getElementById('upload-results').style.display = 'block';
-        document.getElementById('upload-results')
-            .scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-        pill.textContent = '✓ Complete';
-        pill.className = 'pill pill-teal';
-
-    } catch (err) {
-        console.error(err);
-        pill.textContent = '✗ Failed';
-        pill.className = 'pill pill-red';
-        alert('Error: ' + err.message + '\n\nMake sure server is running:\nuvicorn api:app --reload');
-    } finally {
-        document.querySelector('[onclick="analyseFile()"]').disabled = false;
+    // Angles
+    if(data.angles){
+      const a=data.angles;
+      setMetric('um-lknee', a.left_knee,  a.left_knee  > 160?'good':'bad');
+      setMetric('um-rknee', a.right_knee, a.right_knee > 160?'good':'bad');
+      setMetric('um-spine', a.spine,      a.spine      > 150?'good':'warn');
+      setMetric('um-shoulder', a.left_shoulder||a.shoulder, (a.left_shoulder||a.shoulder) > 20?'good':'warn');
     }
+
+    // Annotated image/video
+    if(data.image){
+      const cont=document.getElementById('preview-container');
+      cont.innerHTML='';
+      const img=document.createElement('img');
+      img.src=data.image; img.className='result-image';
+      cont.appendChild(img);
+    }
+    if(data.video_url){
+      const cont=document.getElementById('preview-container');
+      cont.innerHTML='';
+      const vid=document.createElement('video');
+      vid.src=data.video_url+'?t='+Date.now();
+      vid.controls=true;
+      vid.style.cssText='width:100%;height:auto;border-radius:8px;display:block';
+      cont.appendChild(vid);
+    }
+
+    // Status
+    const ok=data.analysis?.status==='Good';
+    const sp=document.getElementById('upload-status-pill');
+    sp.className='status-pill '+(ok?'good':'bad');
+    sp.querySelector('span').textContent=ok?'✅':'⚠️';
+    document.getElementById('upload-status-txt').textContent=ok
+      ?'Good posture — all angles within safe range'
+      :'Needs correction';
+
+    // Issues
+    const issues=data.analysis?.issues||[];
+    const issBox=document.getElementById('upload-issues-box');
+    if(!ok && issues.length){
+      issBox.style.display='flex';
+      document.getElementById('upload-issues-txt').innerHTML='<strong>Clinical note:</strong> '+issues.join(' · ')+'. Advise patient to correct before continuing.';
+    } else {
+      issBox.style.display='none';
+    }
+
+    // ── AI FEEDBACK ──────────────────────────────────
+    if(data.ai_feedback){
+      aiTxt.className='ai-feedback-text';
+      aiTxt.textContent=data.ai_feedback;
+    } else {
+      aiTxt.className='ai-feedback-text loading';
+      aiTxt.textContent='AI feedback not available — check GROQ_API_KEY is set.';
+    }
+
+    document.getElementById('upload-results').scrollIntoView({behavior:'smooth',block:'nearest'});
+    pill.textContent='✓ Complete'; pill.className='pill pill-teal';
+
+  } catch(err) {
+    pill.textContent='✗ Failed'; pill.className='pill pill-red';
+    aiTxt.className='ai-feedback-text loading';
+    aiTxt.textContent='Error: '+err.message+' — make sure uvicorn api:app --reload is running.';
+  } finally {
+    btn.disabled=false;
+  }
 }
 
-  // Reset upload
-  function resetFile() {
-      document.getElementById('file-in').value = '';
-      document.getElementById('file-preview').style.display = 'none';
-      document.getElementById('upload-results').style.display = 'none';
-      document.getElementById('upload-pill').textContent = 'File loaded';
-      document.getElementById('upload-pill').className = 'pill pill-teal';
-      document.getElementById('preview-container').innerHTML = '';
-  }
+function resetFile(){
+  document.getElementById('file-in').value='';
+  document.getElementById('file-preview').style.display='none';
+  document.getElementById('upload-results').style.display='none';
+  document.getElementById('preview-container').innerHTML='';
+  document.getElementById('upload-pill').textContent='File loaded';
+  document.getElementById('upload-pill').className='pill pill-teal';
+  window._currentFile=null;
+}
 
-  // Scroll helper
-  function scrollToSection(id) {
-      document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+// ── SESSION HISTORY ──────────────────────────────────
+async function loadSessions(){
+  const cont=document.getElementById('sessions-container');
+  cont.innerHTML='<div class="empty-state"><div class="empty-icon" style="animation:spin 1s linear infinite;display:inline-block">⏳</div><p>Loading sessions…</p></div>';
+  try {
+    const res=await fetch('/sessions');
+    if(!res.ok) throw new Error('Could not fetch sessions');
+    const rows=await res.json();
+    if(!rows.length){
+      cont.innerHTML='<div class="empty-state"><div class="empty-icon">🗂</div><p>No sessions yet. Analyse a posture to start logging.</p></div>';
+      return;
+    }
+    cont.innerHTML=`<div style="overflow-x:auto">
+      <table class="sessions-table">
+        <thead><tr>
+          <th>ID</th><th>Timestamp</th><th>Exercise</th>
+          <th>Status</th><th>Issues</th>
+          <th>Knee L/R</th><th>Spine</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(r=>{
+            const a=r.angles||{};
+            const ok=r.status==='Good';
+            const ts=new Date(r.timestamp).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
+            return `<tr>
+              <td style="font-family:var(--mono);color:var(--muted)">#${r.id}</td>
+              <td style="font-family:var(--mono);font-size:11px">${ts}</td>
+              <td><span class="pill pill-blue">${r.exercise||'—'}</span></td>
+              <td><span class="session-status ${ok?'good':'bad'}">${ok?'✅ Good':'⚠️ Needs fix'}</span></td>
+              <td><div class="session-issues">${(r.issues||[]).join('<br>')||'—'}</div></td>
+              <td style="font-family:var(--mono);font-size:11px">
+                ${a.left_knee!=null?parseFloat(a.left_knee).toFixed(1)+'°':'—'} /
+                ${a.right_knee!=null?parseFloat(a.right_knee).toFixed(1)+'°':'—'}
+              </td>
+              <td style="font-family:var(--mono);font-size:11px">
+                ${a.spine!=null?parseFloat(a.spine).toFixed(1)+'°':'—'}
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table></div>`;
+  } catch(e){
+    cont.innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><p>${e.message} — make sure the server is running.</p></div>`;
   }
+}
 </script>
 </body>
 </html>

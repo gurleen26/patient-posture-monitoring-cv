@@ -7,7 +7,7 @@ import numpy as np
 import mediapipe as mp
 import base64
 import os
-
+from src.llm_feedback import get_ai_feedback
 from src.pose import get_pose_model, get_landmarks, draw_landmarks
 from src.angles import get_all_angles, reset_smoothing
 from src.analyzer import analyze_posture
@@ -15,9 +15,19 @@ from src.feedback import draw_angles, draw_status
 from config import MAX_WIDTH
 
 from fastapi import WebSocket, WebSocketDisconnect
+from sessions.database import init_db, save_session
 import asyncio
+from fastapi.responses import Response
 
 app = FastAPI(title="PostureMed API")
+
+@app.get("/favicon.ico")
+async def favicon():
+    return Response(status_code=204)
+
+@app.on_event("startup")
+def startup():
+    init_db()
 
 app.add_middleware(
     CORSMiddleware,
@@ -66,11 +76,14 @@ async def analyse_image(
     img_b64   = base64.b64encode(buffer).decode('utf-8')
 
     pose.close()
+    ai_feedback = get_ai_feedback(angles, exercise, analysis)
+    save_session(exercise, analysis, angles)
     return JSONResponse({
-        "angles":   angles,
+        "angles": angles,
         "analysis": analysis,
-        "exercise": exercise,                            # ← ADDED
-        "image":    f"data:image/jpeg;base64,{img_b64}"
+        "exercise": exercise,
+        "ai_feedback": ai_feedback,        # ← new
+        "image": f"data:image/jpeg;base64,{img_b64}"
     })
 
 # ── Video endpoint ─────────────────────────────────────
@@ -150,14 +163,17 @@ async def analyse_video(
 
     try:
         os.remove(temp_path)
-    except:
-        pass
-
+    except OSError as e:
+        print(f"Could not delete temp file: {e}")
+    
+    ai_feedback = get_ai_feedback(last_angles, exercise, last_analysis)
+    save_session(exercise, last_analysis, last_angles)
     return JSONResponse({
-        "angles":    last_angles,
-        "analysis":  last_analysis,
-        "exercise":  exercise,                           # ← ADDED
-        "video_url": f"/output/annotated_videos/annotated_{file.filename}"
+        "angles":     last_angles,
+        "analysis":   last_analysis,
+        "exercise":   exercise,
+        "ai_feedback": ai_feedback,
+        "video_url":  f"/output/annotated_videos/annotated_{file.filename}"
     })
 
 
@@ -233,3 +249,23 @@ async def serve_frontend():
     return FileResponse("frontend/posture_monitor.html")
 
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
+
+@app.get("/sessions")
+def get_sessions():
+    import sqlite3, json
+    conn = sqlite3.connect("posturemed.db")
+    rows = conn.execute(
+        "SELECT id, timestamp, exercise, status, angles, issues FROM sessions ORDER BY id DESC LIMIT 50"
+    ).fetchall()
+    conn.close()
+    return [
+        {
+            "id": r[0],
+            "timestamp": r[1],
+            "exercise": r[2],
+            "status": r[3],
+            "angles": json.loads(r[4]),
+            "issues": json.loads(r[5])
+        }
+        for r in rows
+    ]
