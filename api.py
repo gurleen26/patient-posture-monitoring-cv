@@ -78,8 +78,19 @@ async def analyse_image(
     _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
     img_b64   = base64.b64encode(buffer).decode('utf-8')
 
-    pose.close()
-    ai_feedback = get_ai_feedback(angles, exercise, analysis)
+    try:
+        pose.close()
+    except:
+        pass
+    try:
+        ai_feedback = get_ai_feedback(
+            angles,
+            exercise,
+            analysis
+    )
+    except Exception as e:
+        print("LLM Error:", e)
+        ai_feedback = "AI feedback currently unavailable."
     save_session(exercise, analysis, angles)
     return JSONResponse({
         "angles": angles,
@@ -144,10 +155,8 @@ async def analyse_video(
             break
 
         frame     = cv2.resize(frame, (save_w, save_h))
-        rgb       = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        mp_image  = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
-        timestamp += 1
-        results   = pose.detect_for_video(mp_image, timestamp)
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = pose.process(rgb)
         frame     = draw_landmarks(frame, results)
         landmarks = get_landmarks(results)
 
@@ -168,7 +177,15 @@ async def analyse_video(
     except OSError as e:
         print(f"Could not delete temp file: {e}")
     
-    ai_feedback = get_ai_feedback(last_angles, exercise, last_analysis)
+    try:
+        ai_feedback = get_ai_feedback(
+            last_angles,
+            exercise,
+            last_analysis
+        )
+    except Exception as e:
+        print("LLM Error:", e)
+    ai_feedback = "AI feedback currently unavailable."
     save_session(exercise, last_analysis, last_angles)
     return JSONResponse({
         "angles":     last_angles,
@@ -184,7 +201,6 @@ async def analyse_video(
 async def live_feed(websocket: WebSocket):
     await websocket.accept()
     pose = get_pose_model(static_image_mode=False)
-    timestamp = 0
     exercise = "standing"
     reset_smoothing()
 
@@ -202,9 +218,7 @@ async def live_feed(websocket: WebSocket):
                 continue
 
             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
-            timestamp += 1
-            results = pose.detect_for_video(mp_image, timestamp)
+            results = pose.process(rgb)
             frame = draw_landmarks(frame, results)
             landmarks = get_landmarks(results)
 
@@ -229,7 +243,10 @@ async def live_feed(websocket: WebSocket):
     except WebSocketDisconnect:
         print("Client disconnected")
     finally:
-        pose.close()
+        try:
+            pose.close()
+        except:
+            pass
         reset_smoothing()
 
 # ── Serve output files ─────────────────────────────────
