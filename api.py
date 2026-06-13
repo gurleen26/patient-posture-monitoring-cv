@@ -20,6 +20,10 @@ from fastapi.responses import Response
 from dotenv import load_dotenv
 load_dotenv()
 
+import os
+os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "0"
+os.environ["DISPLAY"] = ""
+
 app = FastAPI(title="PostureMed API")
 
 @app.get("/favicon.ico")
