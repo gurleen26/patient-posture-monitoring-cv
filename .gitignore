@@ -9,13 +9,13 @@ __pycache__/
 *.pyo
 *.pyd
 
-# MediaPipe model file (large file)
-models/pose_landmarker.task
-
 # Output files
 output/temp/
 output/annotated_videos/
 output/annotated_images/
+
+# Database
+*.db
 
 # System files
 .DS_Store

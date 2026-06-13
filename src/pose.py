@@ -13,20 +13,22 @@ import os
 MODEL_PATH = "models/pose_landmarker.task"
 
 def download_model():
-    if not os.path.exists(MODEL_PATH):
-        print("Downloading pose model...")
-        url = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task"
-        os.makedirs("models", exist_ok=True)
-        urllib.request.urlretrieve(url, MODEL_PATH)
-        print("Model downloaded.")
+    # if not os.path.exists(MODEL_PATH):
+    #     print("Downloading pose model...")
+    #     url = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task"
+    #     os.makedirs("models", exist_ok=True)
+    #     urllib.request.urlretrieve(url, MODEL_PATH)
+    #     print("Model downloaded.")
+    return
 
 def get_pose_model(static_image_mode=False):
-    download_model()
     mode = VisionRunningMode.IMAGE if static_image_mode else VisionRunningMode.VIDEO
+
     options = PoseLandmarkerOptions(
         base_options=BaseOptions(model_asset_path=MODEL_PATH),
         running_mode=mode
     )
+
     return PoseLandmarker.create_from_options(options)
 
 def get_landmarks(results):
