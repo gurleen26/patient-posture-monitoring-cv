@@ -17,6 +17,8 @@ from config import MAX_WIDTH
 from fastapi import WebSocket, WebSocketDisconnect
 from sessions.database import init_db, save_session
 from fastapi.responses import Response
+from dotenv import load_dotenv
+load_dotenv()
 
 app = FastAPI(title="PostureMed API")
 
