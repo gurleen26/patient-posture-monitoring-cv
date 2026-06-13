@@ -4,7 +4,6 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import cv2
 import numpy as np
-import mediapipe as mp
 import base64
 import os
 from src.llm_feedback import get_ai_feedback
@@ -61,9 +60,8 @@ async def analyse_image(
         frame = cv2.resize(frame, (MAX_WIDTH, int(h * scale)))
 
     pose      = get_pose_model(static_image_mode=True)
-    rgb       = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    mp_image  = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
-    results   = pose.detect(mp_image)
+    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    results = pose.process(rgb)
     frame     = draw_landmarks(frame, results)
     landmarks = get_landmarks(results)
 
@@ -135,8 +133,7 @@ async def analyse_video(
         fps, (save_w, save_h)
     )
 
-    timestamp     = 0
-    last_angles   = {}
+    last_angles = {}
     last_analysis = {"status": "No person detected", "issues": []}
 
     reset_smoothing()                                    # ← ADDED — fresh session
