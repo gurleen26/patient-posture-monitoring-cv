@@ -16,7 +16,6 @@ from config import MAX_WIDTH
 
 from fastapi import WebSocket, WebSocketDisconnect
 from sessions.database import init_db, save_session
-import asyncio
 from fastapi.responses import Response
 
 app = FastAPI(title="PostureMed API")
@@ -181,64 +180,54 @@ async def analyse_video(
 @app.websocket("/ws/live")
 async def live_feed(websocket: WebSocket):
     await websocket.accept()
-    print("WebSocket connected — starting camera")
-
-    cap       = cv2.VideoCapture(0)
-    pose      = get_pose_model(static_image_mode=False)
+    pose = get_pose_model(static_image_mode=False)
     timestamp = 0
-    exercise  = "standing"   # ← default exercise for live mode
-
-    if not cap.isOpened():
-        await websocket.send_json({"error": "Camera not found"})
-        await websocket.close()
-        return
-
-    reset_smoothing()        # ← ADDED — fresh session
+    exercise = "standing"
+    reset_smoothing()
 
     try:
         while True:
-            ret, frame = cap.read()
-            if not ret:
-                break
+            # Receive frame from browser
+            data = await websocket.receive_json()
+            
+            # Decode base64 frame
+            frame_bytes = base64.b64decode(data["frame"])
+            nparr = np.frombuffer(frame_bytes, np.uint8)
+            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            
+            if frame is None:
+                continue
 
-            frame     = cv2.resize(frame, (640, 480))
-            rgb       = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            mp_image  = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
+            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
             timestamp += 1
-            results   = pose.detect_for_video(mp_image, timestamp)
-            frame     = draw_landmarks(frame, results)
+            results = pose.detect_for_video(mp_image, timestamp)
+            frame = draw_landmarks(frame, results)
             landmarks = get_landmarks(results)
 
-            angles   = {}
+            angles = {}
             analysis = {"status": "No person detected", "issues": []}
 
             if landmarks:
-                angles   = get_all_angles(landmarks)
-                analysis = analyze_posture(angles, exercise=exercise)  # ← UPDATED
-                frame    = draw_angles(frame, angles)
-                frame    = draw_status(frame, analysis)
+                angles = get_all_angles(landmarks)
+                analysis = analyze_posture(angles, exercise=exercise)
+                frame = draw_angles(frame, angles)
+                frame = draw_status(frame, analysis)
 
             _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 60])
-            img_b64   = base64.b64encode(buffer).decode('utf-8')
+            img_b64 = base64.b64encode(buffer).decode('utf-8')
 
             await websocket.send_json({
-                "image":    f"data:image/jpeg;base64,{img_b64}",
-                "angles":   angles,
-                "analysis": analysis,
-                "exercise": exercise   # ← ADDED
+                "image": f"data:image/jpeg;base64,{img_b64}",
+                "angles": angles,
+                "analysis": analysis
             })
 
-            await asyncio.sleep(0.05)
-
     except WebSocketDisconnect:
-        print("WebSocket disconnected")
-    except Exception as e:
-        print(f"WebSocket error: {e}")
+        print("Client disconnected")
     finally:
-        cap.release()
         pose.close()
-        reset_smoothing()    # ← ADDED — clear buffer on disconnect
-        print("Camera released")
+        reset_smoothing()
 
 # ── Serve output files ─────────────────────────────────
 app.mount("/output", StaticFiles(directory="output"), name="output")
